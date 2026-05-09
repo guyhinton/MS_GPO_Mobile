@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>M&S GPO Mobile Dashboard — 8 May 2026 · WP4 Wk1 End</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap');
+  :root{--navy:#1F4E79;--blue:#4472C4;--green:#375623;--red:#C00000;--amber:#b8870a}
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'IBM Plex Sans',sans-serif;background:#e4e8ed;min-height:100vh;display:flex;justify-content:center;align-items:flex-start;padding:12px 6px 40px}
+  .phone{width:100%;max-width:420px;background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 6px 32px rgba(0,0,0,.18)}
+
+  .topbar{background:#0d1f33;padding:10px 14px 8px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+  .topbar-title{color:#9DC3E6;font-size:11px;font-weight:700;letter-spacing:.05em;font-family:'IBM Plex Mono',monospace}
+  .topbar-date{color:#4a6b8a;font-size:9.5px;font-family:'IBM Plex Mono',monospace}
+  .tabs{display:flex;overflow-x:auto;background:#0a1625;border-bottom:1px solid #1a3050;scrollbar-width:none;position:sticky;top:38px;z-index:40}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{flex-shrink:0;padding:7px 10px;font-size:10px;font-weight:600;color:#4a6b8a;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;font-family:'IBM Plex Mono',monospace;transition:color .15s}
+  .tab.active{color:#9DC3E6;border-bottom-color:#4472C4}
+  .tab:not(.active):hover{color:#7aaad0}
+  .page{display:none;padding:9px 9px 20px}
+  .page.active{display:block}
+
+  .pghdr{padding:7px 11px;border-radius:6px;margin-bottom:8px;font-size:10.5px;font-weight:700;color:white;letter-spacing:.03em}
+  .pghdr.combined{background:linear-gradient(90deg,#375623 0%,#1F4E79 100%)}
+  .pghdr.nc{background:#375623} .pghdr.cpe{background:#1F4E79} .pghdr.wk{background:#0d1f33}
+
+  .krow{display:grid;gap:5px;margin-bottom:7px}
+  .k2{grid-template-columns:1fr 1fr} .k3{grid-template-columns:1fr 1fr 1fr}
+  .ktile{background:#f5f6f8;border:1px solid #dde1e7;border-radius:6px;padding:7px 5px 5px;text-align:center}
+  .klabel{font-size:8.5px;color:#666;margin-bottom:2px;font-weight:600}
+  .kval{font-size:20px;font-weight:700;line-height:1;margin-bottom:2px}
+  .ksub{font-size:8px;color:#888;line-height:1.3}
+  .kval.green{color:#375623} .kval.amber{color:#b8870a} .kval.red{color:#C00000} .kval.navy{color:#1F4E79} .kval.blue{color:#4472C4}
+
+  .card{background:#fff;border:1px solid #dde1e7;border-radius:8px;overflow:hidden;margin-bottom:7px}
+  .card-hdr{background:#4472C4;color:white;font-size:9px;font-weight:700;padding:5px 9px;letter-spacing:.02em}
+  .card-hdr.navy{background:#1F4E79} .card-hdr.nc{background:#375623} .card-hdr.cpe{background:#1F4E79} .card-hdr.dark{background:#0d1f33} .card-hdr.danger{background:#7b1a1a} .card-hdr.wk{background:#0d3d24}
+  .card-body{padding:8px}
+
+  .gauge-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin-bottom:7px}
+  .gauge-box{background:#fff;border:1px solid #dde1e7;border-radius:7px;padding:5px 3px 4px;text-align:center}
+  .gauge-lbl{font-size:7.5px;color:#666;margin-bottom:1px;font-weight:600}
+  .gauge-val{font-size:13px;font-weight:700;margin:1px 0}
+  .gauge-status{font-size:7.5px;font-weight:700}
+  .g-green{color:#375623} .g-amber{color:#b8870a} .g-red{color:#C00000}
+
+  .dtable{width:100%;border-collapse:collapse;font-size:9.5px}
+  .dtable th{background:#4472C4;color:white;padding:4px 3px;font-weight:700;font-size:8.5px;text-align:center}
+  .dtable th.nc{background:#375623} .dtable th.cpe{background:#1F4E79} .dtable th.wk{background:#0d1f33}
+  .dtable td{padding:3px 3px;text-align:center;border-bottom:1px solid #eee;color:#333;font-size:9px}
+  .dtable td:first-child{text-align:left;font-weight:600;color:#1F4E79;font-size:8.5px;padding-left:5px}
+  .dtable tr.cur td{background:#DEEAF1;font-weight:700}
+  .dtable tr:nth-child(even):not(.cur) td{background:#f9fafb}
+  .val-g{color:#375623!important} .val-a{color:#b8870a!important} .val-r{color:#C00000!important}
+
+  .badge{display:inline-block;padding:2px 6px;border-radius:10px;font-size:8px;font-weight:700}
+  .b-green{background:#EAF3DE;color:#375623} .b-amber{background:#FFF3CD;color:#b8870a} .b-red{background:#FCEBEB;color:#C00000} .b-blue{background:#E6F1FB;color:#1F4E79}
+
+  .note{font-size:8px;color:#555;padding:4px 7px;border-left:2px solid #4472C4;background:#f5f8fd;border-radius:0 5px 5px 0;margin-bottom:6px;line-height:1.6}
+  .note.warn{border-left-color:#b8870a;background:#fffbf0} .note.ok{border-left-color:#375623;background:#f2f7ee} .note.info{border-left-color:#0d1f33;background:#f0f2f5}
+
+  .chg-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid #eee;font-size:10px}
+  .chg-row:last-child{border-bottom:none}
+  .chg-label{color:#666;font-size:9.5px}
+  .chg-val{font-weight:700;font-size:11px}
+  .chg-val.green{color:#375623} .chg-val.amber{color:#b8870a} .chg-val.red{color:#C00000} .chg-val.blue{color:#1F4E79}
+
+  .prog-bar{height:7px;background:#eee;border-radius:4px;overflow:hidden;margin:3px 0}
+  .prog-fill{height:100%;border-radius:4px}
+
+  .team-row{display:grid;grid-template-columns:64px 1fr 44px;gap:5px;align-items:center;margin-bottom:5px}
+  .team-name{font-size:9.5px;font-weight:700;text-align:right}
+  .team-track{position:relative;height:15px;background:#eee;border-radius:3px}
+  .team-pv{position:absolute;top:5px;left:0;height:5px;opacity:.45}
+  .team-ev{position:absolute;top:0;left:0;height:15px;border-radius:3px;opacity:.85}
+  .team-txt{font-size:8.5px;color:#888}
+
+  .leg{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:5px;font-size:8.5px;color:#666}
+  .leg span{display:flex;align-items:center;gap:3px}
+  .ll{display:inline-block;width:16px;height:2px;vertical-align:middle}
+  .ld{display:inline-block;width:16px;border-top:2px dashed;vertical-align:middle}
+
+  .band-row{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px}
+  .band{padding:4px 7px;border-radius:4px;font-size:8.5px;font-weight:700;color:white;text-align:center}
+  .band.nc{background:#375623} .band.cpe{background:#1F4E79}
+
+  /* Weekly closure day pills */
+  .day-pill{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .day-name{font-size:8px;font-weight:700;color:#666;letter-spacing:.03em}
+  .day-total{font-size:16px;font-weight:700;color:#0d1f33}
+  .day-sub{font-size:7.5px;color:#888}
+
+  @media(min-width:500px){body{padding:24px 16px 48px}}
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <div class="topbar">
+    <span class="topbar-title">M&amp;S GPO · M-ERP</span>
+    <span class="topbar-date">8 May 2026 · WP4 Wk1 End</span>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="go(0)">Combined</div>
+    <div class="tab" onclick="go(1)">Non-CPE</div>
+    <div class="tab" onclick="go(2)">CPE</div>
+    <div class="tab" onclick="go(3)">NC Teams</div>
+    <div class="tab" onclick="go(4)">CPE Detail</div>
+    <div class="tab" onclick="go(5)">Wk1 Review</div>
+  </div>
+
+
+  <!-- ══════════════════════════════════
+       PAGE 0 — COMBINED
+  ══════════════════════════════════ -->
+  <div class="page active" id="p0">
+    <div class="pghdr combined">Combined Programme · WP4 Wk1 End · 8 May 2026</div>
+    <div class="band-row">
+      <div class="band nc">NON-CPE PROGRAMME</div>
+      <div class="band cpe">CPE (PRICING ENGINE)</div>
+    </div>
+    <div class="krow k3">
+      <div class="ktile"><div class="klabel">Combined EV</div><div class="kval green">26.21%</div><div class="ksub">BAC-wtd 229NC:119CPE</div></div>
+      <div class="ktile"><div class="klabel">Combined SV</div><div class="kval amber">−0.49%</div><div class="ksub">EV 26.21 − PV 26.70</div></div>
+      <div class="ktile"><div class="klabel">Combined SPI</div><div class="kval green">98.2%</div><div class="ksub">ON TRACK ✅</div></div>
+    </div>
+    <div class="krow k2">
+      <div class="ktile" style="border-top:3px solid #375623">
+        <div class="klabel">Non-CPE EV</div><div class="kval green">33.21%</div><div class="ksub">SPI 95.1% · SV −1.70pp</div>
+      </div>
+      <div class="ktile" style="border-top:3px solid #1F4E79">
+        <div class="klabel">CPE EV</div><div class="kval blue">12.74%</div><div class="ksub">SPI 116.7% AHEAD ✅</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr dark">Combined EV vs PV · WP end-points · EV stops today · PV → 100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#375623"></span>NC EV (stops ★ WP4 Wk1)</span>
+          <span><span class="ld" style="border-color:#375623"></span>NC PV → 100%</span>
+          <span><span class="ll" style="background:#1F4E79"></span>CPE EV (stops ★)</span>
+          <span><span class="ld" style="border-color:#1F4E79"></span>CPE PV → 100%</span>
+        </div>
+        <div style="position:relative;height:215px">
+          <canvas id="c0" role="img" aria-label="Combined EV vs PV, WP milestones on X-axis, 0-100% on Y. EV lines stop at WP4. PV runs to completion. CPE and NC PV curves converge at WP7 Aug."></canvas>
+        </div>
+        <div class="note ok" style="margin-top:5px;margin-bottom:0">NC &amp; CPE plan (PV) curves converge <strong>WP7 / Aug 2026</strong>: NC 93% · CPE 100% at WP7 end. Both reach ~100% by WP8/Sep. EV lines terminate at today's WP4 Wk1 end point; dashed PV shows the full forecast to completion.</div>
+      </div>
+    </div>
+
+    <div class="gauge-row">
+      <div class="gauge-box"><div class="gauge-lbl">NC Overall</div><canvas id="g0a" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">95.1%</div><div class="gauge-status g-green">ON TRACK</div></div>
+      <div class="gauge-box"><div class="gauge-lbl">NC RICEFW</div><canvas id="g0b" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">134.6%</div><div class="gauge-status g-green">AHEAD ✅</div></div>
+      <div class="gauge-box"><div class="gauge-lbl">CPE Overall</div><canvas id="g0c" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">116.7%</div><div class="gauge-status g-green">AHEAD ✅</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr">Programme summary — WP4 Wk1 End</div>
+      <div class="card-body">
+        <div class="chg-row"><span class="chg-label">WP4 Wk1 total closures</span><span class="chg-val green">58 (NC:43 · CPE:15)</span></div>
+        <div class="chg-row"><span class="chg-label">8 May — STRONG FRIDAY</span><span class="chg-val green">18 (NC:16 · CPE:2)</span></div>
+        <div class="chg-row"><span class="chg-label">WP4 open (NC · CPE)</span><span class="chg-val amber">439 · 181</span></div>
+        <div class="chg-row"><span class="chg-label">Overdue open items</span><span class="chg-val red">86 (NC:42 · CPE:44 func)</span></div>
+        <div class="chg-row"><span class="chg-label">On-Hold total</span><span class="chg-val amber">61 (36 functional)</span></div>
+        <div class="chg-row"><span class="chg-label">PV crossover (CPE meets NC)</span><span class="chg-val blue">~WP7 Aug 2026</span></div>
+        <div class="chg-row"><span class="chg-label">No reversals Wk1</span><span class="chg-val green">✅ Clean week</span></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════
+       PAGE 1 — NON-CPE
+  ══════════════════════════════════ -->
+  <div class="page" id="p1">
+    <div class="pghdr nc">Non-CPE · EV · SPI · SV · WP4 Wk1 End</div>
+    <div class="krow k3">
+      <div class="ktile"><div class="klabel">EV (8 May)</div><div class="kval green">33.21%</div><div class="ksub">Plan 34.91%</div></div>
+      <div class="ktile"><div class="klabel">SV</div><div class="kval amber">−1.70pp</div><div class="ksub">prev −2.35pp ↑</div></div>
+      <div class="ktile"><div class="klabel">SPI</div><div class="kval green">95.1%</div><div class="ksub">ON TRACK ✅</div></div>
+    </div>
+    <div class="krow k2">
+      <div class="ktile"><div class="klabel">RICEFW EV</div><div class="kval green">29.08%</div><div class="ksub">Plan 21.6% · SPI 134.6%</div></div>
+      <div class="ktile"><div class="klabel">Config EV</div><div class="kval amber">68.78%</div><div class="ksub">Plan 74.3% · SPI 92.6%</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr nc">NC Overall EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#375623"></span>EV actual — stops WP4 Wk1 ★</span>
+          <span><span class="ld" style="border-color:#375623"></span>PV plan → 100%</span>
+        </div>
+        <div style="position:relative;height:185px"><canvas id="nc-overall"></canvas></div>
+      </div>
+    </div>
+
+    <div class="gauge-row">
+      <div class="gauge-box"><div class="gauge-lbl">Overall SPI</div><canvas id="g1a" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">95.1%</div><div class="gauge-status g-green">ON TRACK</div></div>
+      <div class="gauge-box"><div class="gauge-lbl">RICEFW SPI</div><canvas id="g1b" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">134.6%</div><div class="gauge-status g-green">AHEAD ✅</div></div>
+      <div class="gauge-box"><div class="gauge-lbl">Config SPI</div><canvas id="g1c" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">92.6%</div><div class="gauge-status g-green">ON TRACK</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr nc">NC RICEFW EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#375623"></span>RICEFW EV — stops ★</span>
+          <span><span class="ld" style="border-color:#375623"></span>RICEFW PV → 100%</span>
+        </div>
+        <div style="position:relative;height:170px"><canvas id="nc-rfw"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr nc">NC Config EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#4472C4"></span>Config EV — stops ★</span>
+          <span><span class="ld" style="border-color:#4472C4"></span>Config PV → 100%</span>
+        </div>
+        <div style="position:relative;height:170px"><canvas id="nc-cfg"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr nc">NC Schedule Variance — by WP milestone</div>
+      <div class="card-body">
+        <div style="position:relative;height:140px"><canvas id="nc-sv"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr">Config &amp; RICEFW EV / PV trend — by WP</div>
+      <div class="card-body" style="overflow-x:auto">
+        <table class="dtable" style="min-width:320px">
+          <thead><tr><th class="nc" style="text-align:left">Milestone</th><th class="nc">Cfg EV</th><th class="nc">Cfg PV</th><th class="nc">Cfg SPI</th><th class="nc">RFW EV</th><th class="nc">RFW PV</th><th class="nc">RFW SPI</th></tr></thead>
+          <tbody>
+            <tr><td>WP2 W3</td><td>3.8</td><td>22.0</td><td class="val-r">17%</td><td>4.4</td><td>5.2</td><td class="val-a">85%</td></tr>
+            <tr><td>WP3 W1</td><td>35.4</td><td>61.2</td><td class="val-r">58%</td><td>10.4</td><td>17.1</td><td class="val-r">61%</td></tr>
+            <tr><td>WP3 W3</td><td>63.1</td><td>74.3</td><td class="val-a">85%</td><td>33.0</td><td>27.8</td><td class="val-g">119%</td></tr>
+            <tr><td>WP3 End</td><td>67.3</td><td>74.3</td><td class="val-a">91%</td><td>26.4</td><td>18.7</td><td class="val-g">141%</td></tr>
+            <tr class="cur"><td>WP4 Wk1 ★</td><td class="val-a">68.78</td><td>74.3</td><td class="val-g">92.6%</td><td class="val-g">29.08</td><td>21.6</td><td class="val-g">134.6%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr">SCTI — Delivery Flow Health</div>
+      <div class="card-body">
+        <table class="dtable">
+          <thead><tr><th class="nc" style="text-align:left">Step</th><th class="nc">Plan</th><th class="nc">Actual</th><th class="nc">SCTI</th><th class="nc">n</th><th class="nc">Status</th></tr></thead>
+          <tbody>
+            <tr><td>01 FD Draft</td><td>10d</td><td>7.4d</td><td class="val-g">1.366</td><td>72</td><td class="val-g">🟢 AHEAD</td></tr>
+            <tr><td>02 Peer Review</td><td>3d</td><td>2.7d</td><td class="val-g">1.125</td><td>51</td><td class="val-g">🟢 AHEAD</td></tr>
+            <tr class="cur"><td>05 FD Approval</td><td>3d</td><td>5.0d</td><td class="val-r">0.592</td><td>29</td><td class="val-r">🔴 BOTTLENECK</td></tr>
+          </tbody>
+        </table>
+        <div class="note warn" style="margin-top:5px;margin-bottom:0">FD Approval 5.0d avg vs 3d planned. 5 approvals in Wk1 (Coriat ×2, Robin ×2, Ting ×1). Monitor closely in Wk2.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════
+       PAGE 2 — CPE
+  ══════════════════════════════════ -->
+  <div class="page" id="p2">
+    <div class="pghdr cpe">CPE · EV · SPI · SV · WP4 Wk1 End</div>
+    <div class="krow k3">
+      <div class="ktile"><div class="klabel">EV (8 May)</div><div class="kval blue">12.74%</div><div class="ksub">Plan 10.92% AHEAD</div></div>
+      <div class="ktile"><div class="klabel">SV</div><div class="kval green">+1.82pp</div><div class="ksub">prev +1.21pp ✅</div></div>
+      <div class="ktile"><div class="klabel">SPI</div><div class="kval green">116.7%</div><div class="ksub">AHEAD ✅</div></div>
+    </div>
+    <div class="krow k2">
+      <div class="ktile"><div class="klabel">RICEFW EV</div><div class="kval green">6.55%</div><div class="ksub">Plan 5.20% · SPI 125.0%</div></div>
+      <div class="ktile"><div class="klabel">Config EV</div><div class="kval amber">25.92%</div><div class="ksub">Plan 26.50% · SPI 97.8%</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">CPE Overall EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#1F4E79"></span>EV actual — stops WP4 Wk1 ★</span>
+          <span><span class="ld" style="border-color:#1F4E79"></span>PV plan → 100% (WP7)</span>
+        </div>
+        <div style="position:relative;height:185px"><canvas id="cpe-overall"></canvas></div>
+        <div class="note warn" style="margin-top:5px;margin-bottom:0">CPE plan (PV) ramps steeply in WP6–WP7 (Jun–Aug): 52% → 100%. EV is tracking ahead of current plan. Heavy back-loading of RICEFW scope into WP6–WP7.</div>
+      </div>
+    </div>
+
+    <div class="gauge-row">
+      <div class="gauge-box"><div class="gauge-lbl">CPE Overall</div><canvas id="g2a" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">116.7%</div><div class="gauge-status g-green">AHEAD ✅</div></div>
+      <div class="gauge-box"><div class="gauge-lbl">RICEFW SPI</div><canvas id="g2b" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">125.0%</div><div class="gauge-status g-green">AHEAD ✅</div></div>
+      <div class="gauge-box"><div class="gauge-lbl">Config SPI</div><canvas id="g2c" width="72" height="42" style="display:block;margin:0 auto 1px"></canvas><div class="gauge-val g-green">97.8%</div><div class="gauge-status g-green">ON TRACK</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">CPE RICEFW EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#1F4E79"></span>RICEFW EV — stops ★</span>
+          <span><span class="ld" style="border-color:#1F4E79"></span>RICEFW PV → 100%</span>
+        </div>
+        <div style="position:relative;height:170px"><canvas id="cpe-rfw"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">CPE Config EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#F4B942"></span>Config EV — stops ★</span>
+          <span><span class="ld" style="border-color:#b8870a"></span>Config PV → 100%</span>
+        </div>
+        <div style="position:relative;height:170px"><canvas id="cpe-cfg"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">CPE EV / PV / SV — by WP milestone</div>
+      <div class="card-body" style="overflow-x:auto">
+        <table class="dtable" style="min-width:260px">
+          <thead><tr><th class="cpe" style="text-align:left">Milestone</th><th class="cpe">EV%</th><th class="cpe">PV%</th><th class="cpe">SV pp</th><th class="cpe">SPI</th></tr></thead>
+          <tbody>
+            <tr><td>WP3 W3</td><td>4.49</td><td>9.46</td><td class="val-r">−4.97</td><td class="val-r">47%</td></tr>
+            <tr><td>WP3 End</td><td>10.43</td><td>9.22</td><td class="val-g">+1.21</td><td class="val-g">113%</td></tr>
+            <tr class="cur"><td>WP4 Wk1 ★</td><td class="val-g">12.74</td><td>10.92</td><td class="val-g">+1.82</td><td class="val-g">116.7%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="note warn">1 CPE reversal: 855026 (Ruby Hii) Closed→On-Hold · 03_Config Tariff Capture. EV held at 12.74% per monotonicity rule. Must re-close WP4 Wk2.</div>
+  </div>
+
+
+  <!-- ══════════════════════════════════
+       PAGE 3 — NC TEAMS
+  ══════════════════════════════════ -->
+  <div class="page" id="p3">
+    <div class="pghdr nc">Non-CPE · Team EV · Velocity · WP4 Wk1</div>
+
+    <div class="card">
+      <div class="card-hdr nc">Team EV vs BAC vs PV — 8 May 2026</div>
+      <div class="card-body">
+        <div style="display:flex;justify-content:flex-end;gap:12px;margin-bottom:7px;font-size:8.5px;color:#666">
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:9px;height:4px;background:#ccc;opacity:.5;display:inline-block;border-radius:1px"></span>BAC</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:9px;height:4px;background:#9DC3E6;opacity:.55;display:inline-block"></span>PV</span>
+          <span style="display:flex;align-items:center;gap:3px"><span style="width:9px;height:4px;background:#375623;display:inline-block;border-radius:1px"></span>EV</span>
+        </div>
+        <div class="team-row"><div class="team-name" style="color:#ED7D31">CrMgt</div><div class="team-track"><div class="team-pv" style="width:14.5%;background:#9DC3E6"></div><div class="team-ev" style="width:7.24%;background:#ED7D31"></div><div style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:7.5px;color:#555">7.24% ✅</div></div><div class="team-txt">BAC 14.5%</div></div>
+        <div class="team-row"><div class="team-name" style="color:#70AD47">TF&amp;LoC</div><div class="team-track"><div class="team-pv" style="width:13.3%;background:#9DC3E6"></div><div class="team-ev" style="width:2.81%;background:#70AD47"></div><div style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:7.5px;color:#C00000">2.81% ⚠</div></div><div class="team-txt">BAC 13.3%</div></div>
+        <div class="team-row"><div class="team-name" style="color:#4472C4">BP&amp;NBL</div><div class="team-track"><div class="team-pv" style="width:12.0%;background:#9DC3E6"></div><div class="team-ev" style="width:7.66%;background:#4472C4"></div><div style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:7.5px;color:#555">7.66%</div></div><div class="team-txt">BAC 12.0%</div></div>
+        <div class="team-row"><div class="team-name" style="color:#b8870a">Inv&amp;PEV</div><div class="team-track"><div class="team-pv" style="width:33.9%;background:#9DC3E6"></div><div class="team-ev" style="width:8.68%;background:#FFC000"></div><div style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:7.5px;color:#555">8.68% ✅</div></div><div class="team-txt">BAC 33.9%</div></div>
+        <div class="team-row"><div class="team-name" style="color:#5B9BD5">CO&amp;FWF</div><div class="team-track"><div class="team-pv" style="width:14.0%;background:#9DC3E6"></div><div class="team-ev" style="width:3.03%;background:#5B9BD5"></div><div style="position:absolute;right:3px;top:50%;transform:translateY(-50%);font-size:7.5px;color:#C00000">3.03% ⚠</div></div><div class="team-txt">BAC 14.0%</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr nc">Team performance — 8 May 2026</div>
+      <div class="card-body" style="overflow-x:auto">
+        <table class="dtable" style="min-width:300px">
+          <thead><tr><th class="nc" style="text-align:left">Team</th><th class="nc">BAC</th><th class="nc">PV</th><th class="nc">EV</th><th class="nc">SV</th><th class="nc">Status</th></tr></thead>
+          <tbody>
+            <tr><td style="color:#ED7D31">CrMgt</td><td>14.5%</td><td>6.25%</td><td class="val-g">7.24%</td><td class="val-g">+0.99%</td><td class="val-g">AHEAD ✅</td></tr>
+            <tr><td style="color:#70AD47">TF&amp;LoC</td><td>13.3%</td><td>3.22%</td><td class="val-r">2.81%</td><td class="val-r">−0.41%</td><td class="val-r">BEHIND</td></tr>
+            <tr><td style="color:#4472C4">BP&amp;NBL</td><td>12.0%</td><td>8.01%</td><td class="val-a">7.66%</td><td class="val-r">−0.35%</td><td class="val-r">BEHIND</td></tr>
+            <tr><td style="color:#b8870a">Inv&amp;PEV</td><td>33.9%</td><td>8.26%</td><td class="val-g">8.68%</td><td class="val-g">+0.42%</td><td class="val-g">AHEAD ✅</td></tr>
+            <tr><td style="color:#5B9BD5">CO&amp;FWF</td><td>14.0%</td><td>3.82%</td><td class="val-r">3.03%</td><td class="val-r">−0.79%</td><td class="val-r">BEHIND</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr nc">NC weekly closures — stacked by team (WP periods)</div>
+      <div class="card-body">
+        <div class="leg" style="flex-wrap:wrap">
+          <span><span style="display:inline-block;width:9px;height:9px;background:#ED7D31;border-radius:2px"></span>CrMgt</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#70AD47;border-radius:2px"></span>TF&amp;LoC</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#4472C4;border-radius:2px"></span>BP&amp;NBL</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#FFC000;border-radius:2px"></span>Inv&amp;PEV</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#5B9BD5;border-radius:2px"></span>CO&amp;FWF</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#767171;border-radius:2px"></span>IST</span>
+        </div>
+        <div style="position:relative;height:160px"><canvas id="nc-vel"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════
+       PAGE 4 — CPE DETAIL
+  ══════════════════════════════════ -->
+  <div class="page" id="p4">
+    <div class="pghdr cpe">CPE · Commodity Progress · Velocity · WP4 Wk1</div>
+    <div class="krow k2">
+      <div class="ktile"><div class="klabel">SAP closed to date</div><div class="kval blue">81</div><div class="ksub">of 1,042 SAP scope (7.8%)</div></div>
+      <div class="ktile"><div class="klabel">WP4 Wk1 CPE closed</div><div class="kval green">15</div><div class="ksub">Cfg:14 · RFW:1</div></div>
+    </div>
+    <div class="krow k2">
+      <div class="ktile"><div class="klabel">Wk1 carryover → Wk2</div><div class="kval amber">24</div><div class="ksub">open targeted items</div></div>
+      <div class="ktile"><div class="klabel">Required velocity</div><div class="kval red">64.8/wk</div><div class="ksub">SAP scope to WP6 end ⚠</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">Commodity EV progress</div>
+      <div class="card-body">
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#333">Copper Concentrate</span><span class="badge b-green">58.3%</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:58.3%;background:#70AD47"></div></div>
+          <div style="font-size:8px;color:#777;margin-top:1px">Config 58.3% (7/12 US) · no RICEFW</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#333">Bauxite &amp; Alumina</span><span class="badge b-blue">25.9%</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:25.9%;background:#4472C4"></div></div>
+          <div style="font-size:8px;color:#777;margin-top:1px">Config 25.9% (7/27 US) · no RICEFW</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#333">Aluminium</span><span class="badge b-blue">13.3%</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:13.3%;background:#1F4E79"></div></div>
+          <div style="font-size:8px;color:#777;margin-top:1px">Config 26.7% · RICEFW 0% · 2 new activations WP4</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#333">Common &amp; Multi-Commodity</span><span class="badge b-blue">13.1%</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:13.1%;background:#5B9BD5"></div></div>
+          <div style="font-size:8px;color:#777;margin-top:1px">RFW 8.8% (37/421 SAP US) · Cfg 20.5% · bulk scope</div>
+        </div>
+        <div style="margin-bottom:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#333">Iron Ore</span><span class="badge b-blue">8.1%</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:8.1%;background:#9DC3E6"></div></div>
+          <div style="font-size:8px;color:#777;margin-top:1px">Config 16.1% · RICEFW 0% · Anton Zimin ×2 IO Config 8 May ✅</div>
+        </div>
+        <div style="margin-bottom:3px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px"><span style="font-size:10px;font-weight:700;color:#333">Salt</span><span class="badge b-red">0.0%</span></div>
+          <div class="prog-bar"><div class="prog-fill" style="width:0.5%;background:#C00000"></div></div>
+          <div style="font-size:8px;color:#777;margin-top:1px">All items New — not started</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">CPE RICEFW &amp; Config EV vs PV · WP end-points · Y 0–100%</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#1F4E79"></span>RFW EV ★</span>
+          <span><span class="ld" style="border-color:#1F4E79"></span>RFW PV</span>
+          <span><span class="ll" style="background:#F4B942"></span>Cfg EV ★</span>
+          <span><span class="ld" style="border-color:#b8870a"></span>Cfg PV</span>
+        </div>
+        <div style="position:relative;height:175px"><canvas id="cpe-types"></canvas></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-hdr cpe">CPE SAP weekly velocity vs required rate</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span style="display:inline-block;width:9px;height:9px;background:#1F4E79;border-radius:2px"></span>SAP closures</span>
+          <span><span class="ld" style="border-color:#C00000"></span>Required 64.8/wk</span>
+        </div>
+        <div style="position:relative;height:140px"><canvas id="cpe-vel"></canvas></div>
+        <div class="note warn" style="margin-top:5px;margin-bottom:0">Avg 8.1/wk vs 64.8/wk required to WP6. No week has met target. Wk2 pipeline: 17 CPE items targeted 9–15 May.</div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════
+       PAGE 5 — WK1 REVIEW
+  ══════════════════════════════════ -->
+  <div class="page" id="p5">
+    <div class="pghdr wk">WP4 Week 1 Review · 4–8 May 2026</div>
+
+    <!-- KPI summary row -->
+    <div class="krow k3">
+      <div class="ktile"><div class="klabel">Wk1 total closed</div><div class="kval green">58</div><div class="ksub">NC:43 · CPE:15</div></div>
+      <div class="ktile"><div class="klabel">NC EV gain</div><div class="kval green">+2.31pp</div><div class="ksub">30.90→33.21%</div></div>
+      <div class="ktile"><div class="klabel">CPE EV gain</div><div class="kval blue">+2.31pp</div><div class="ksub">10.43→12.74%</div></div>
+    </div>
+
+    <!-- Daily closures bar chart — main feature of this page -->
+    <div class="card">
+      <div class="card-hdr wk">Daily closures — WP4 Wk1 · NC (green) + CPE (navy) per day</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span style="display:inline-block;width:9px;height:9px;background:#375623;border-radius:2px"></span>Non-CPE closures</span>
+          <span><span style="display:inline-block;width:9px;height:9px;background:#1F4E79;border-radius:2px"></span>CPE closures</span>
+        </div>
+        <div style="position:relative;height:200px">
+          <canvas id="daily-bar" role="img" aria-label="Daily closure bar chart WP4 Wk1: Mon 4 May NC:1 CPE:0; Tue 5 May NC:11 CPE:1; Wed 6 May NC:6 CPE:1; Thu 7 May NC:5 CPE:11; Fri 8 May NC:16 CPE:2; Wk1 total NC:43 CPE:15"></canvas>
+        </div>
+        <!-- Day pills summary below chart -->
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:8px;padding-top:7px;border-top:1px solid #eee">
+          <div class="day-pill"><div class="day-name">MON 4</div><div class="day-total">1</div><div class="day-sub">NC:1 CPE:0</div></div>
+          <div class="day-pill"><div class="day-name">TUE 5</div><div class="day-total">12</div><div class="day-sub">NC:11 CPE:1</div></div>
+          <div class="day-pill"><div class="day-name">WED 6</div><div class="day-total" style="color:#b8870a">7</div><div class="day-sub">NC:6 CPE:1</div></div>
+          <div class="day-pill"><div class="day-name">THU 7</div><div class="day-total">16</div><div class="day-sub">NC:5 CPE:11</div></div>
+          <div class="day-pill"><div class="day-name">FRI 8 ★</div><div class="day-total" style="color:#375623">18</div><div class="day-sub" style="color:#375623;font-weight:700">BEST DAY</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cumulative EV build through the week -->
+    <div class="card">
+      <div class="card-hdr wk">Cumulative NC EV build — WP4 Wk1 daily</div>
+      <div class="card-body">
+        <div class="leg">
+          <span><span class="ll" style="background:#375623"></span>NC EV%</span>
+          <span><span class="ld" style="border-color:#888"></span>PV target 34.91%</span>
+        </div>
+        <div style="position:relative;height:155px">
+          <canvas id="daily-ev" role="img" aria-label="Daily cumulative NC EV build: Mon 30.93, Tue 31.52, Wed 32.07, Thu 32.51, Fri 33.21"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wk1 narrative -->
+    <div class="card">
+      <div class="card-hdr dark">WP4 Wk1 narrative</div>
+      <div class="card-body">
+        <div class="chg-row"><span class="chg-label">Mon 4 May (D1)</span><span class="chg-val">1 close · +0.03pp NC</span></div>
+        <div class="chg-row"><span class="chg-label">Tue 5 May (D2)</span><span class="chg-val">12 closes · +0.59pp NC</span></div>
+        <div class="chg-row"><span class="chg-label">Wed 6 May (D3)</span><span class="chg-val">7 closes · +0.55pp NC</span></div>
+        <div class="chg-row"><span class="chg-label">Thu 7 May (D4)</span><span class="chg-val">16 closes · +0.44pp NC</span></div>
+        <div class="chg-row"><span class="chg-label">Fri 8 May (D5) ★</span><span class="chg-val green">18 closes · +1.25pp NC (BEST)</span></div>
+        <div class="chg-row"><span class="chg-label">Wk2 pipeline (9–15 May)</span><span class="chg-val blue">46 func (NC:29 · CPE:17)</span></div>
+        <div class="chg-row"><span class="chg-label">Wk1 carryover → Wk2</span><span class="chg-val amber">NC:31 · CPE:24</span></div>
+      </div>
+    </div>
+
+    <!-- Follow-up -->
+    <div class="card">
+      <div class="card-hdr danger">Follow-up — Wk2 priorities</div>
+      <div class="card-body">
+        <div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #eee"><div style="margin-bottom:2px"><span class="badge b-red">HIGH</span></div><div style="font-size:9.5px;color:#333;line-height:1.5">86 overdue open items (NC:42 func, CPE:44 func) — IST/Tech 56 open (Karthik 34, Kannan 11). Escalate this week.</div></div>
+        <div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #eee"><div style="margin-bottom:2px"><span class="badge b-red">HIGH</span></div><div style="font-size:9.5px;color:#333;line-height:1.5">CPE velocity 8.1/wk avg vs 64.8/wk required to WP6. Wk2 must deliver ≥39 SAP closures to start recovery.</div></div>
+        <div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #eee"><div style="margin-bottom:2px"><span class="badge b-amber">MEDIUM</span></div><div style="font-size:9.5px;color:#333;line-height:1.5">855026 Ruby Hii (CPE) — re-close in Wk2. EV held at 12.74% per monotonicity rule.</div></div>
+        <div style="margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid #eee"><div style="margin-bottom:2px"><span class="badge b-amber">MEDIUM</span></div><div style="font-size:9.5px;color:#333;line-height:1.5">61 On-Hold (36 functional) — leads to review. All need ADO comment + resolution date.</div></div>
+        <div><div style="margin-bottom:2px"><span class="badge b-amber">MEDIUM</span></div><div style="font-size:9.5px;color:#333;line-height:1.5">2 new features (895795 Tarun, 895810 Govind) — target dates needed this week.</div></div>
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:8px 0 2px;font-size:8.5px;color:#aaa">Confidential · M&amp;S GPO · 8 May 2026 · WP4 Wk1 End · ACN Delivery Mgmt</div>
+  </div>
+
+</div><!-- /phone -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   DATA — from M_S_Combined_Dashboard_080526_FINAL__4_.html
+
+   X-axis uses WP END milestones only (no intra-week points):
+     0=WP1/Feb  1=WP2/Mar  2=WP3/2May  3=WP4/30May  4=WP5/Jun
+     5=WP6/Jul  6=WP7/Aug  7=WP8/Sep   8=End
+   EV arrays have exactly (TODAY_IDX + 1) values and null-pad the rest.
+   PV arrays run the full 9 points to 100%.
+═══════════════════════════════════════════════════════════════ */
+var WP = ['WP1\nFeb','WP2\nMar','WP3\n2 May','WP4\n30 May','WP5\nJun','WP6\nJul','WP7\nAug','WP8\nSep','End'];
+var N = WP.length; // 9
+var TODAY_IDX = 3; // WP4/30May — EV terminates here (WP4 Wk1 end)
+
+/* PV – full 9-point plan curves */
+var NC_OVR_PV  = [0.12,  9.46, 31.54, 45,   60,   74,   93,  100,  100];
+var CPE_OVR_PV = [0,     0,     9.22, 16,   28,   52,  100,  100,  100];
+var NC_RFW_PV  = [0,     3.5,  21.6,  32,   48,   64,   80,   92,  100];
+var NC_CFG_PV  = [0,    22,    74.8,  85,   90,   95,   98,  100,  100];
+var CPE_RFW_PV = [0,     0,    4.64,  12,   28,   60,  100,  100,  100];
+var CPE_CFG_PV = [0,     0,   24.81,  50,   75,  100,  100,  100,  100];
+
+/* EV – actual values, stops at TODAY_IDX (WP3→WP4 Wk1) */
+var NC_OVR_EV_RAW  = [0.12, 1.83, 30.90, 33.21];
+var CPE_OVR_EV_RAW = [0,    0,    10.43, 12.74];
+var NC_RFW_EV_RAW  = [0,    4.4,  27.5,  29.08];
+var NC_CFG_EV_RAW  = [0,    3.8,  68.2,  68.78];
+var CPE_RFW_EV_RAW = [0,    0,     6.47,  6.55];
+var CPE_CFG_EV_RAW = [0,    0,    23.69, 25.92];
+
+/* SV data (by WP milestone) */
+var SV_WP     = ['WP2\nW3','WP2\nW4','WP3\nW1','WP3\nW3','WP3\nEnd','WP4\nWk1'];
+var NC_SV_VAL = [-4.97, -7.58, -11.13, -5.53, -2.35, -1.70];
+
+/* ── Tab switching ── */
+function go(i){
+  document.querySelectorAll('.tab').forEach(function(t,j){ t.classList.toggle('active',j===i); });
+  document.querySelectorAll('.page').forEach(function(p,j){ p.classList.toggle('active',j===i); });
+  document.querySelectorAll('.tab')[i].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'});
+}
+
+/* ── Gauge ── */
+function drawG(id, pct, color){
+  var c=document.getElementById(id); if(!c) return;
+  var x=c.getContext('2d'), cx=36, cy=38, r=26;
+  x.clearRect(0,0,72,42);
+  x.beginPath(); x.arc(cx,cy,r,Math.PI,2*Math.PI); x.strokeStyle='#e0e0e0'; x.lineWidth=7; x.lineCap='round'; x.stroke();
+  var ang=Math.PI+Math.PI*Math.min(pct/150,1);
+  x.beginPath(); x.arc(cx,cy,r,Math.PI,ang); x.strokeStyle=color; x.lineWidth=7; x.lineCap='round'; x.stroke();
+}
+
+/* ── "Today ★" vertical line plugin ── */
+var todayPlugin={
+  id:'todayLine',
+  afterDraw:function(chart){
+    var ti=chart.options._todayIdx; if(ti===undefined) return;
+    var m=chart.getDatasetMeta(0); if(!m||!m.data[ti]) return;
+    var x=m.data[ti].x, top=chart.chartArea.top, bot=chart.chartArea.bottom, ctx=chart.ctx;
+    ctx.save();
+    ctx.setLineDash([4,3]); ctx.strokeStyle='rgba(0,0,0,.28)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(x,top); ctx.lineTo(x,bot); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle='rgba(20,20,20,.7)'; ctx.font='bold 8px IBM Plex Sans,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Today ★', x, top-3);
+    ctx.restore();
+  }
+};
+Chart.register(todayPlugin);
+
+/* ── Null-pad EV array so EV line stops cleanly at TODAY_IDX ── */
+function padEV(arr){
+  var out = arr.slice();
+  while(out.length < N){ out.push(null); }
+  return out;
+}
+
+/* ── Dataset factories ── */
+function pvDs(label, data, color){
+  return {label:label, data:data, borderColor:color, borderDash:[5,4], tension:.35, borderWidth:1.5, fill:false, pointRadius:0, pointHoverRadius:3};
+}
+function evDs(label, rawArr, color, fill){
+  return {label:label, data:padEV(rawArr), borderColor:color,
+    backgroundColor: fill ? color+'18' : 'transparent',
+    tension:.35, borderWidth:2.5, fill:!!fill,
+    pointRadius: rawArr.map(function(_,i){ return i===rawArr.length-1?5:3; }).concat(new Array(N-rawArr.length).fill(0)),
+    pointBackgroundColor: color, spanGaps:false};
+}
+
+/* ── Base S-curve chart options — Y always 0–100, X = WP milestones ── */
+function sOpts(){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    _todayIdx: TODAY_IDX,
+    plugins:{
+      legend:{display:false},
+      tooltip:{mode:'index', intersect:false,
+        callbacks:{label:function(c){ var v=c.parsed.y; return v===null?'':c.dataset.label+': '+v.toFixed(2)+'%'; }}}
+    },
+    scales:{
+      x:{ticks:{font:{size:8}, color:'#666', maxRotation:0, autoSkip:false}, grid:{color:'rgba(0,0,0,.05)'}},
+      y:{min:0, max:100,
+        ticks:{font:{size:8}, color:'#666', stepSize:20, callback:function(v){return v+'%';}},
+        grid:{color:'rgba(0,0,0,.07)'}}
+    }
+  };
+}
+
+window.addEventListener('load', function(){
+
+  /* Gauges */
+  drawG('g0a',95.1,'#375623'); drawG('g0b',100,'#375623'); drawG('g0c',116.7,'#1F4E79');
+  drawG('g1a',95.1,'#375623'); drawG('g1b',100,'#375623'); drawG('g1c',92.6,'#4472C4');
+  drawG('g2a',116.7,'#1F4E79'); drawG('g2b',125,'#1F4E79'); drawG('g2c',97.8,'#4472C4');
+
+  /* ── Combined S-curve ── */
+  new Chart(document.getElementById('c0'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('NC EV',  NC_OVR_EV_RAW,  '#375623', true),
+      pvDs('NC PV',  NC_OVR_PV,      '#375623'),
+      evDs('CPE EV', CPE_OVR_EV_RAW, '#1F4E79', true),
+      pvDs('CPE PV', CPE_OVR_PV,     '#1F4E79')
+    ]}, options:sOpts()
+  });
+
+  /* ── NC Overall ── */
+  new Chart(document.getElementById('nc-overall'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('NC EV', NC_OVR_EV_RAW, '#375623', true),
+      pvDs('NC PV', NC_OVR_PV,     '#375623')
+    ]}, options:sOpts()
+  });
+
+  /* ── NC RICEFW ── */
+  new Chart(document.getElementById('nc-rfw'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('RICEFW EV', NC_RFW_EV_RAW, '#375623', true),
+      pvDs('RICEFW PV', NC_RFW_PV,     '#375623')
+    ]}, options:sOpts()
+  });
+
+  /* ── NC Config ── */
+  new Chart(document.getElementById('nc-cfg'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('Config EV', NC_CFG_EV_RAW, '#4472C4', true),
+      pvDs('Config PV', NC_CFG_PV,     '#4472C4')
+    ]}, options:sOpts()
+  });
+
+  /* ── NC SV bar ── */
+  new Chart(document.getElementById('nc-sv'),{type:'bar',
+    data:{labels:SV_WP, datasets:[{label:'NC SV (pp)', data:NC_SV_VAL, borderRadius:3,
+      backgroundColor:NC_SV_VAL.map(function(v){return v>=-2?'#375623':v>=-5?'#b8870a':'#C00000';})}]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){return c.parsed.y.toFixed(2)+'pp';}}}},
+      scales:{x:{ticks:{font:{size:8},color:'#666',maxRotation:0},grid:{display:false}},
+              y:{ticks:{font:{size:8},color:'#666',callback:function(v){return v+'pp';}},grid:{color:'rgba(0,0,0,.06)'}}}}
+  });
+
+  /* ── CPE Overall ── */
+  new Chart(document.getElementById('cpe-overall'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('CPE EV', CPE_OVR_EV_RAW, '#1F4E79', true),
+      pvDs('CPE PV', CPE_OVR_PV,     '#1F4E79')
+    ]}, options:sOpts()
+  });
+
+  /* ── CPE RICEFW ── */
+  new Chart(document.getElementById('cpe-rfw'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('CPE RICEFW EV', CPE_RFW_EV_RAW, '#1F4E79', true),
+      pvDs('CPE RICEFW PV', CPE_RFW_PV,     '#1F4E79')
+    ]}, options:sOpts()
+  });
+
+  /* ── CPE Config ── */
+  new Chart(document.getElementById('cpe-cfg'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('CPE Config EV', CPE_CFG_EV_RAW, '#F4B942', true),
+      pvDs('CPE Config PV', CPE_CFG_PV,     '#b8870a')
+    ]}, options:sOpts()
+  });
+
+  /* ── CPE RICEFW + Config combined ── */
+  new Chart(document.getElementById('cpe-types'),{type:'line',
+    data:{labels:WP, datasets:[
+      evDs('RFW EV',  CPE_RFW_EV_RAW, '#1F4E79', false),
+      pvDs('RFW PV',  CPE_RFW_PV,     '#1F4E79'),
+      evDs('Cfg EV',  CPE_CFG_EV_RAW, '#F4B942', false),
+      pvDs('Cfg PV',  CPE_CFG_PV,     '#b8870a')
+    ]}, options:sOpts()
+  });
+
+  /* ── NC velocity stacked bar (WP periods) ── */
+  new Chart(document.getElementById('nc-vel'),{type:'bar',
+    data:{labels:['WP1-2','WP3 W1','WP3 W2','WP3 W3','WP3 W4','WP3 W5','WP4 Wk1'], datasets:[
+      {label:'CrMgt',  data:[8, 20, 25, 20, 18, 12, 12], backgroundColor:'#ED7D31', stack:'a', borderRadius:1},
+      {label:'TF&LoC', data:[5, 12, 16, 12, 10,  8,  5], backgroundColor:'#70AD47', stack:'a', borderRadius:1},
+      {label:'BP&NBL', data:[3,  7, 10,  8,  7,  5,  8], backgroundColor:'#4472C4', stack:'a', borderRadius:1},
+      {label:'Inv&PEV',data:[9, 15, 20, 16, 14, 11, 10], backgroundColor:'#FFC000', stack:'a', borderRadius:1},
+      {label:'CO&FWF', data:[5, 10, 12, 10,  8,  6,  4], backgroundColor:'#5B9BD5', stack:'a', borderRadius:1},
+      {label:'IST',    data:[2,  5,  8,  6,  5,  4,  4], backgroundColor:'#767171', stack:'a', borderRadius:1}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales:{x:{ticks:{font:{size:8},color:'#666'},grid:{display:false}},
+              y:{ticks:{font:{size:8},color:'#666'},grid:{color:'rgba(0,0,0,.06)'}}}}
+  });
+
+  /* ── CPE SAP weekly velocity ── */
+  new Chart(document.getElementById('cpe-vel'),{type:'bar',
+    data:{labels:['WP1','WP2 W3','WP2 W4','WP3 W1','WP3 W2','WP3 W3','WP3 W4','WP3 W5','WP4 Wk1'],
+      datasets:[
+        {label:'SAP closed', data:[0,2,4,6,9,26,17,17,15], backgroundColor:'#1F4E79', borderRadius:3},
+        {label:'Required 64.8/wk', type:'line', data:[64.8,64.8,64.8,64.8,64.8,64.8,64.8,64.8,64.8],
+          borderColor:'#C00000', borderDash:[4,3], borderWidth:1.5, pointRadius:0, fill:false}
+      ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false}},
+      scales:{x:{ticks:{font:{size:7.5},color:'#666'},grid:{display:false}},
+              y:{min:0, ticks:{font:{size:8},color:'#666'},grid:{color:'rgba(0,0,0,.06)'}}}}
+  });
+
+  /* ════════════════════════════════════════
+     WEEK TAB — Daily closures stacked bar
+     Data from ADO CSV (dayfirst=True) + dashboard narrative:
+       Mon 4 May: NC=1,  CPE=0  → total 1
+       Tue 5 May: NC=11, CPE=1  → total 12
+       Wed 6 May: NC=6,  CPE=1  → total 7
+       Thu 7 May: NC=5,  CPE=11 → total 16
+       Fri 8 May: NC=16, CPE=2  → total 18  (dashboard: STRONG FRIDAY)
+     Week total: NC=39+4=43, CPE=15 ✓
+  ════════════════════════════════════════ */
+  var DAY_LABELS = ['Mon 4 May','Tue 5 May','Wed 6 May','Thu 7 May','Fri 8 May ★'];
+  var DAY_NC  = [1, 11, 6, 5, 16];
+  var DAY_CPE = [0,  1, 1, 11, 2];
+
+  new Chart(document.getElementById('daily-bar'),{type:'bar',
+    data:{labels: DAY_LABELS, datasets:[
+      {label:'Non-CPE', data:DAY_NC,  backgroundColor:'#375623', stack:'day', borderRadius:[0,0,3,3]},
+      {label:'CPE',     data:DAY_CPE, backgroundColor:'#1F4E79', stack:'day', borderRadius:[3,3,0,0]}
+    ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index', intersect:false,
+          callbacks:{
+            title:function(items){ return items[0].label; },
+            afterBody:function(items){
+              var nc=items.find(function(i){return i.dataset.label==='Non-CPE';})||{parsed:{y:0}};
+              var cpe=items.find(function(i){return i.dataset.label==='CPE';})||{parsed:{y:0}};
+              return 'Total: '+(nc.parsed.y+cpe.parsed.y)+'\nNC: '+nc.parsed.y+'  CPE: '+cpe.parsed.y;
+            }
+          }
+        }
+      },
+      scales:{
+        x:{ticks:{font:{size:8.5},color:'#333',maxRotation:0}, grid:{display:false}},
+        y:{min:0, max:22,
+          ticks:{font:{size:8},color:'#666',stepSize:5, callback:function(v){return v;}},
+          grid:{color:'rgba(0,0,0,.06)'},
+          title:{display:true,text:'Closures',font:{size:8},color:'#888'}}
+      }
+    }
+  });
+
+  /* ── Daily cumulative NC EV line ── */
+  new Chart(document.getElementById('daily-ev'),{type:'line',
+    data:{labels:['Mon 4','Tue 5','Wed 6','Thu 7','Fri 8'],
+      datasets:[
+        {label:'NC EV%', data:[30.93, 31.52, 32.07, 32.51, 33.21],
+          borderColor:'#375623', backgroundColor:'#37562318', tension:.3, borderWidth:2.5, fill:true,
+          pointRadius:4, pointBackgroundColor:'#375623'},
+        {label:'PV target', data:[34.91,34.91,34.91,34.91,34.91],
+          borderColor:'#888', borderDash:[4,3], borderWidth:1.2, pointRadius:0, fill:false}
+      ]},
+    options:{responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{display:false}, tooltip:{mode:'index',intersect:false,
+        callbacks:{label:function(c){return c.dataset.label+': '+c.parsed.y.toFixed(2)+'%';}}}},
+      scales:{
+        x:{ticks:{font:{size:8.5},color:'#333'},grid:{display:false}},
+        y:{min:30, max:36,
+          ticks:{font:{size:8},color:'#666',callback:function(v){return v+'%';}},
+          grid:{color:'rgba(0,0,0,.06)'}}
+      }
+    }
+  });
+});
+</script>
+</body>
+</html>
