@@ -687,7 +687,26 @@
         </div>
       </div>
     </div>
+
+    <!-- Combined ACN pipeline: NC RICEFW + CPE DS ACN stacked -->
+    <div class="card">
+      <div class="ch" style="background:#375623">ACN combined pipeline — NC RICEFW + CPE DS ACN · user stories by WP</div>
+      <div class="cb">
+        <div class="leg" style="margin-bottom:6px">
+          <span><span class="lsq" style="background:#375623"></span>NC RICEFW actual</span>
+          <span><span class="lsq" style="background:rgba(55,86,35,.25);border:1px solid rgba(55,86,35,.55)"></span>NC RICEFW pipeline</span>
+          <span><span class="lsq" style="background:#70AD47"></span>CPE DS ACN actual</span>
+          <span><span class="lsq" style="background:rgba(112,173,71,.25);border:1px solid rgba(112,173,71,.55)"></span>CPE DS ACN pipeline</span>
+        </div>
+        <div style="position:relative;height:220px"><canvas id="acn-combined-wp"></canvas></div>
+        <div class="note" style="border-left-color:#375623;background:#f2f9eb;margin-top:6px;margin-bottom:0">Combined ACN open: 1,208 NC RICEFW + 1,043 CPE DS ACN = <strong>2,251 US</strong>. Peak demand WP5–6 at ~529–539 US/WP. CPE DS bars are entirely pipeline (0% started) — gated by Config KT step 09 (0%).</div>
+      </div>
+    </div>
   </div>
+
+  <!-- ════════════════════════════════════
+       PAGE 3 — CPE CONFIG
+  ════════════════════════════════════ -->
   <div class="page" id="p4">
     <div class="phdr" style="background:#7030A0">CPE Config <span class="sub">44 features · 3 stages + KT gate</span></div>
 
@@ -1256,6 +1275,23 @@ window.addEventListener('load', function(){
         {label:'CPE DS ACN (pipeline)', data:PIPE_DACN, backgroundColor:'rgba(112,173,71,.22)', stack:'s', borderWidth:1,  borderColor:'rgba(112,173,71,.5)'}
       ]},
       options: wpChartOpts('actual','pipeline')
+    });
+  }
+
+  /* ── PAGE 2 (CPE DS ACN) — combined NC RICEFW + CPE DS ACN ── */
+  var ctx_acn_comb = document.getElementById('acn-combined-wp');
+  if(ctx_acn_comb){
+    var combOpts = wpChartOpts('actual','pipeline');
+    combOpts.scales.y.max = 600;
+    combOpts.scales.y.ticks.stepSize = 100;
+    new Chart(ctx_acn_comb,{type:'bar',
+      data:{labels:WP_LABELS, datasets:[
+        {label:'NC RICEFW (actual)',    data:ACT_NC,   backgroundColor:'#375623',              stack:'s', borderRadius:0, borderWidth:0},
+        {label:'NC RICEFW (pipeline)', data:PIPE_NC,  backgroundColor:'rgba(55,86,35,.30)',   stack:'s', borderWidth:1,  borderColor:'rgba(55,86,35,.6)'},
+        {label:'CPE DS ACN (actual)',  data:ACT_DACN, backgroundColor:'#70AD47',              stack:'s', borderRadius:0, borderWidth:0},
+        {label:'CPE DS ACN (pipeline)',data:PIPE_DACN,backgroundColor:'rgba(112,173,71,.30)', stack:'s', borderWidth:1,  borderColor:'rgba(112,173,71,.6)'}
+      ]},
+      options: combOpts
     });
   }
 
